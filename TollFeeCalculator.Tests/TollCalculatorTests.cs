@@ -24,7 +24,7 @@ public class TollCalculatorTests
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -40,7 +40,7 @@ public class TollCalculatorTests
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(0, fee);
@@ -54,7 +54,7 @@ public class TollCalculatorTests
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(0, fee);
@@ -68,7 +68,7 @@ public class TollCalculatorTests
         Vehicle vehicle = new Motorbike();
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(0, fee);
@@ -82,7 +82,7 @@ public class TollCalculatorTests
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(0, fee);
@@ -97,7 +97,7 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action calculateTollForPassage = () => _calculator.CalculateTollForPassage(passageTime, vehicle);
+        Action calculateTollForPassage = () => _calculator.CalculateTollForPassage(vehicle, passageTime);
         Assert.Throws<ArgumentNullException>(calculateTollForPassage);
     }
 
