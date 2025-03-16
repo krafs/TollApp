@@ -21,7 +21,7 @@ public class TollCalculatorTests
     {
         // Arrange
         DateTime passageTime = DateTime.Parse(passageTimeText);
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
         int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
@@ -37,7 +37,7 @@ public class TollCalculatorTests
     {
         // Arrange
         DateTime passageTime = DateTime.Parse(passageTimeText);
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
         int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
@@ -51,7 +51,7 @@ public class TollCalculatorTests
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-07-01 06:15"); // Weekday
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
         int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
@@ -65,7 +65,7 @@ public class TollCalculatorTests
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-03-17 06:15"); // Weekday
-        Vehicle vehicle = new Motorbike();
+        Vehicle vehicle = new(VehicleType.Motorbike);
 
         // Act
         int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
@@ -79,7 +79,7 @@ public class TollCalculatorTests
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-12-25 06:15"); // Christmas Day
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
         int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
@@ -105,12 +105,13 @@ public class TollCalculatorTests
     public void CalculateTotalDailyTollThrowsArgumentNullExceptionGivenNullVehicle()
     {
         // Arrange
-        DateTime[] passageTimes = [DateTime.Parse("2025-03-17 06:15")]; // Weekday
+        DateOnly passageDate = DateOnly.Parse("2025-03-17"); // Weekday
+        TimeOnly[] passageTimes = [TimeOnly.Parse("06:15")];
         Vehicle vehicle = null!;
 
         // Act
         // Assert
-        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
         Assert.Throws<ArgumentNullException>(calculateTotalDailyToll);
     }
 
@@ -118,41 +119,26 @@ public class TollCalculatorTests
     public void CalculateTotalDailyTollThrowsArgumentNullExceptionGivenNullPassageTimes()
     {
         // Arrange
-        DateTime[] passageTimes = null!;
-        Vehicle vehicle = new Car();
+        DateOnly passageDate = DateOnly.Parse("2025-03-17");
+        TimeOnly[] passageTimes = null!;
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
         // Assert
-        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
         Assert.Throws<ArgumentNullException>(calculateTotalDailyToll);
-    }
-
-    [Fact(Skip = "Fails")]
-    public void CalculateTotalDailyTollThrowsArgumentOutOfRangeExceptionGivenPassageTimesForMultipleDays()
-    {
-        // Arrange
-        DateTime[] passageTimes =
-        [
-            DateTime.Parse("2025-03-17 06:15"),
-            DateTime.Parse("2025-03-18 06:15")
-        ];
-        Vehicle vehicle = new Car();
-
-        // Act
-        // Assert
-        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
-        Assert.Throws<ArgumentOutOfRangeException>(calculateTotalDailyToll);
     }
 
     [Fact(Skip = "Fails")]
     public void CalculateTotalDailyTollReturnsZeroGivenEmptyPassageTimes()
     {
         // Arrange
-        DateTime[] passageTimes = [];
-        Vehicle vehicle = new Car();
+        DateOnly passageDate = DateOnly.Parse("2025-03-17");
+        TimeOnly[] passageTimes = [];
+        Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(0, fee);
@@ -162,16 +148,17 @@ public class TollCalculatorTests
     public void CalculateTotalDailyTollReturnsAccumulatedFee()
     {
         // Arrange
-        DateTime[] passageTimes =
+        DateOnly passageDate = DateOnly.Parse("2025-03-17"); // Weekday
+        TimeOnly[] passageTimes =
         [
-            DateTime.Parse("2025-03-17 06:15"), // 8 SEK
-            DateTime.Parse("2025-03-17 17:15") // 13 SEK
+            TimeOnly.Parse("06:15"), // 8 SEK
+            TimeOnly.Parse("17:15") // 13 SEK
         ];
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
         int expectedFee = 21; // 8 + 13
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -181,16 +168,17 @@ public class TollCalculatorTests
     public void CalculateTotalDailyTollReturnsOnlyHighestFeeGivenMultiplePassagesWithinOneHour()
     {
         // Arrange
-        DateTime[] passageTimes =
+        DateOnly passageDate = DateOnly.Parse("2025-03-17"); // Weekday
+        TimeOnly[] passageTimes =
         [
-            DateTime.Parse("2025-03-17 06:15"), // 8 SEK
-            DateTime.Parse("2025-03-17 06:45") // 13 SEK
+            TimeOnly.Parse("06:15"), // 8 SEK
+            TimeOnly.Parse("06:45") // 13 SEK
         ];
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
         int expectedFee = 13; // 13 > 8
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -200,19 +188,20 @@ public class TollCalculatorTests
     public void CalculateTotalDailyTollReturnsMax60()
     {
         // Arrange
-        DateTime[] passageTimes =
+        DateOnly passageDate = DateOnly.Parse("2025-03-17"); // Weekday
+        TimeOnly[] passageTimes =
         [
-            DateTime.Parse("2025-03-17 06:10"), // 8 SEK
-            DateTime.Parse("2025-03-17 07:15"), // 18 SEK
-            DateTime.Parse("2025-03-17 08:20"), // 13 SEK
-            DateTime.Parse("2025-03-17 09:25"), // 8 SEK
-            DateTime.Parse("2025-03-17 15:35"), // 18 SEK
+            TimeOnly.Parse("06:10"), // 8 SEK
+            TimeOnly.Parse("07:15"), // 18 SEK
+            TimeOnly.Parse("08:20"), // 13 SEK
+            TimeOnly.Parse("09:25"), // 8 SEK
+            TimeOnly.Parse("15:35"), // 18 SEK
         ];
-        Vehicle vehicle = new Car();
+        Vehicle vehicle = new(VehicleType.Car);
         int expectedFee = 60; // min(8 + 18 + 13 + 8 + 18, 60) = 60 (actual total: 65)
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);

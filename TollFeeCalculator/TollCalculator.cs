@@ -13,12 +13,13 @@ public class TollCalculator
      * @return - the total toll fee for that day
      */
     
-    public int CalculateTotalDailyToll(Vehicle vehicle, DateTime[] dates)
+    public int CalculateTotalDailyToll(Vehicle vehicle, DateOnly passageDate, IEnumerable<TimeOnly> passageTimes)
     {
-        DateTime intervalStart = dates[0];
+        DateTime intervalStart = passageDate.ToDateTime(passageTimes.First());
         int totalFee = 0;
-        foreach (DateTime date in dates)
+        foreach (TimeOnly passageTime in passageTimes)
         {
+            DateTime date = passageDate.ToDateTime(passageTime);
             int nextFee = CalculateTollForPassage(vehicle, date);
             int tempFee = CalculateTollForPassage(vehicle, intervalStart);
 
@@ -43,13 +44,13 @@ public class TollCalculator
     private bool IsTollFreeVehicle(Vehicle vehicle)
     {
         if (vehicle == null) return false;
-        String vehicleType = vehicle.GetVehicleType();
-        return vehicleType.Equals(TollFreeVehicles.Motorbike.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Tractor.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Emergency.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Diplomat.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Foreign.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Military.ToString());
+        VehicleType vehicleType = vehicle.VehicleType;
+        return vehicleType.Equals(VehicleType.Motorbike) ||
+               vehicleType.Equals(VehicleType.Tractor) ||
+               vehicleType.Equals(VehicleType.Emergency) ||
+               vehicleType.Equals(VehicleType.Diplomat) ||
+               vehicleType.Equals(VehicleType.Foreign) ||
+               vehicleType.Equals(VehicleType.Military);
     }
 
     public int CalculateTollForPassage(Vehicle vehicle, DateTime date)
@@ -94,15 +95,5 @@ public class TollCalculator
             }
         }
         return false;
-    }
-
-    private enum TollFreeVehicles
-    {
-        Motorbike = 0,
-        Tractor = 1,
-        Emergency = 2,
-        Diplomat = 3,
-        Foreign = 4,
-        Military = 5
     }
 }
