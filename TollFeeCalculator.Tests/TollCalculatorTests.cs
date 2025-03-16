@@ -17,14 +17,14 @@ public class TollCalculatorTests
     [InlineData("2025-03-17 17:30", 13)] // 17:00-17:59
     [InlineData("2025-03-17 18:15", 8)] // 18:00-18:29
     [InlineData("2025-03-17 19:00", 0)] // Outside fee schedule
-    public void GetTollFeeReturnsCorrectFeeBasedOnSchedule(string passageTimeText, int expectedFee)
+    public void CalculateTollForPassageReturnsCorrectFeeBasedOnSchedule(string passageTimeText, int expectedFee)
     {
         // Arrange
         DateTime passageTime = DateTime.Parse(passageTimeText);
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.GetTollFee(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -33,63 +33,63 @@ public class TollCalculatorTests
     [Theory]
     [InlineData("2025-03-15 06:15")] // Saturday
     [InlineData("2025-03-16 06:15")] // Sunday
-    public void GetTollFeeReturnsZeroOnWeekend(string passageTimeText)
+    public void CalculateTollForPassageReturnsZeroOnWeekend(string passageTimeText)
     {
         // Arrange
         DateTime passageTime = DateTime.Parse(passageTimeText);
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.GetTollFee(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
 
         // Assert
         Assert.Equal(0, fee);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFeeReturnsZeroInJuly()
+    public void CalculateTollForPassageReturnsZeroInJuly()
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-07-01 06:15"); // Weekday
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.GetTollFee(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
 
         // Assert
         Assert.Equal(0, fee);
     }
 
     [Fact]
-    public void GetTollFeeReturnsZeroGivenExemptVehicle()
+    public void CalculateTollForPassageReturnsZeroGivenExemptVehicle()
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-03-17 06:15"); // Weekday
         Vehicle vehicle = new Motorbike();
 
         // Act
-        int fee = _calculator.GetTollFee(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
 
         // Assert
         Assert.Equal(0, fee);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFeeReturnsZeroOnPublicHoliday()
+    public void CalculateTollForPassageReturnsZeroOnPublicHoliday()
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-12-25 06:15"); // Christmas Day
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.GetTollFee(passageTime, vehicle);
+        int fee = _calculator.CalculateTollForPassage(passageTime, vehicle);
 
         // Assert
         Assert.Equal(0, fee);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFeeThrowsArgumentNullExceptionGivenNullVehicle()
+    public void CalculateTollForPassageThrowsArgumentNullExceptionGivenNullVehicle()
     {
         // Arrange
         DateTime passageTime = DateTime.Parse("2025-03-17 06:15"); // Weekday
@@ -97,7 +97,7 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action getTollFee = () => _calculator.GetTollFee(passageTime, vehicle);
+        Action getTollFee = () => _calculator.CalculateTollForPassage(passageTime, vehicle);
         Assert.Throws<ArgumentNullException>(getTollFee);
     }
 
