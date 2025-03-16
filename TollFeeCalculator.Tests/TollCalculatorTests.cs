@@ -97,12 +97,12 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action getTollFee = () => _calculator.CalculateTollForPassage(passageTime, vehicle);
-        Assert.Throws<ArgumentNullException>(getTollFee);
+        Action calculateTollForPassage = () => _calculator.CalculateTollForPassage(passageTime, vehicle);
+        Assert.Throws<ArgumentNullException>(calculateTollForPassage);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ThrowsArgumentNullExceptionGivenNullVehicle()
+    public void CalculateTotalDailyTollThrowsArgumentNullExceptionGivenNullVehicle()
     {
         // Arrange
         DateTime[] passageTimes = [DateTime.Parse("2025-03-17 06:15")]; // Weekday
@@ -110,12 +110,12 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action getTollFee = () => _calculator.GetTollFee(vehicle, passageTimes);
-        Assert.Throws<ArgumentNullException>(getTollFee);
+        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        Assert.Throws<ArgumentNullException>(calculateTotalDailyToll);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ThrowsArgumentNullExceptionGivenNullPassageTimes()
+    public void CalculateTotalDailyTollThrowsArgumentNullExceptionGivenNullPassageTimes()
     {
         // Arrange
         DateTime[] passageTimes = null!;
@@ -123,12 +123,12 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action getTollFee = () => _calculator.GetTollFee(vehicle, passageTimes);
-        Assert.Throws<ArgumentNullException>(getTollFee);
+        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        Assert.Throws<ArgumentNullException>(calculateTotalDailyToll);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ThrowsArgumentOutOfRangeExceptionGivenPassageTimesForMultipleDays()
+    public void CalculateTotalDailyTollThrowsArgumentOutOfRangeExceptionGivenPassageTimesForMultipleDays()
     {
         // Arrange
         DateTime[] passageTimes =
@@ -140,26 +140,26 @@ public class TollCalculatorTests
 
         // Act
         // Assert
-        Action getTollFee = () => _calculator.GetTollFee(vehicle, passageTimes);
-        Assert.Throws<ArgumentOutOfRangeException>(getTollFee);
+        Action calculateTotalDailyToll = () => _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
+        Assert.Throws<ArgumentOutOfRangeException>(calculateTotalDailyToll);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ReturnsZeroGivenEmptyPassageTimes()
+    public void CalculateTotalDailyTollReturnsZeroGivenEmptyPassageTimes()
     {
         // Arrange
         DateTime[] passageTimes = [];
         Vehicle vehicle = new Car();
 
         // Act
-        int fee = _calculator.GetTollFee(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
 
         // Assert
         Assert.Equal(0, fee);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ReturnsAccumulatedFee()
+    public void CalculateTotalDailyTollReturnsAccumulatedFee()
     {
         // Arrange
         DateTime[] passageTimes =
@@ -171,14 +171,14 @@ public class TollCalculatorTests
         int expectedFee = 21; // 8 + 13
 
         // Act
-        int fee = _calculator.GetTollFee(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
     }
 
     [Fact]
-    public void GetTollFee2ReturnsOnlyHighestFeeGivenMultiplePassagesWithinOneHour()
+    public void CalculateTotalDailyTollReturnsOnlyHighestFeeGivenMultiplePassagesWithinOneHour()
     {
         // Arrange
         DateTime[] passageTimes =
@@ -190,14 +190,14 @@ public class TollCalculatorTests
         int expectedFee = 13; // 13 > 8
 
         // Act
-        int fee = _calculator.GetTollFee(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
     }
 
     [Fact(Skip = "Fails")]
-    public void GetTollFee2ReturnsMax60()
+    public void CalculateTotalDailyTollReturnsMax60()
     {
         // Arrange
         DateTime[] passageTimes =
@@ -212,7 +212,7 @@ public class TollCalculatorTests
         int expectedFee = 60; // min(8 + 18 + 13 + 8 + 18, 60) = 60 (actual total: 65)
 
         // Act
-        int fee = _calculator.GetTollFee(vehicle, passageTimes);
+        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);

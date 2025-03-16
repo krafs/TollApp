@@ -13,7 +13,7 @@ public class TollCalculator
      * @return - the total toll fee for that day
      */
     
-    public int GetTollFee(Vehicle vehicle, DateTime[] dates)
+    public int CalculateTotalDailyToll(Vehicle vehicle, DateTime[] dates)
     {
         DateTime intervalStart = dates[0];
         int totalFee = 0;
