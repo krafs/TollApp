@@ -1,4 +1,4 @@
-﻿using TollFeeCalculator;
+﻿namespace TollFeeCalculator;
 
 public class TollCalculator
 {
