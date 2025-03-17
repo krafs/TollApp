@@ -17,14 +17,14 @@ public class TollCalculatorTests
     [InlineData("2025-03-17 17:30", 13)] // 17:00-17:59
     [InlineData("2025-03-17 18:15", 8)] // 18:00-18:29
     [InlineData("2025-03-17 19:00", 0)] // Outside fee schedule
-    public void CalculateTollForPassageReturnsCorrectFeeBasedOnSchedule(string passageTimeText, int expectedFee)
+    public void CalculateTollForPassageReturnsCorrectFeeBasedOnSchedule(string passageTimeText, decimal expectedFee)
     {
         // Arrange
         DateTime passageTime = DateTime.Parse(passageTimeText);
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -40,10 +40,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
 
     [Fact(Skip = "Fails")]
@@ -54,10 +54,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
 
     [Fact]
@@ -68,10 +68,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Motorbike);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
 
     [Fact(Skip = "Fails")]
@@ -82,10 +82,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
     
     [Fact(Skip = "Fails")]
@@ -96,10 +96,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
+        decimal fee = _calculator.CalculateTollForPassage(vehicle, passageTime);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
 
     [Fact]
@@ -152,10 +152,10 @@ public class TollCalculatorTests
         Vehicle vehicle = new(VehicleType.Car);
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
+        decimal fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
-        Assert.Equal(0, fee);
+        Assert.Equal(0M, fee);
     }
 
     [Fact]
@@ -169,10 +169,10 @@ public class TollCalculatorTests
             TimeOnly.Parse("17:15"), // 13 SEK
         ];
         Vehicle vehicle = new(VehicleType.Car);
-        int expectedFee = 21; // 8 + 13
+        decimal expectedFee = 21M; // 8 + 13
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
+        decimal fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -189,10 +189,10 @@ public class TollCalculatorTests
             TimeOnly.Parse("06:45") // 13 SEK
         ];
         Vehicle vehicle = new(VehicleType.Car);
-        int expectedFee = 13; // 13 > 8
+        decimal expectedFee = 13M; // 13 > 8
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
+        decimal fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);
@@ -212,10 +212,10 @@ public class TollCalculatorTests
             TimeOnly.Parse("16:40") // 18 SEK
         ];
         Vehicle vehicle = new(VehicleType.Car);
-        int expectedFee = 60; // min(8 + 18 + 13 + 18 + 18, 60) = 60 (actual total: 75)
+        decimal expectedFee = 60M; // min(8 + 18 + 13 + 18 + 18, 60) = 60 (actual total: 75)
 
         // Act
-        int fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
+        decimal fee = _calculator.CalculateTotalDailyToll(vehicle, passageDate, passageTimes);
 
         // Assert
         Assert.Equal(expectedFee, fee);

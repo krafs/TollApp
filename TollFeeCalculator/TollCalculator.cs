@@ -9,22 +9,22 @@ public class TollCalculator
     /// <param name="passageDate">date of all passes on one day</param>
     /// <param name="passageTimes">times of all passes</param>
     /// <returns>the total toll fee for that day, in SEK</returns>
-    public int CalculateTotalDailyToll(Vehicle vehicle, DateOnly passageDate, IEnumerable<TimeOnly> passageTimes)
+    public decimal CalculateTotalDailyToll(Vehicle vehicle, DateOnly passageDate, IEnumerable<TimeOnly> passageTimes)
     {
         ArgumentNullException.ThrowIfNull(vehicle);
         ArgumentNullException.ThrowIfNull(passageTimes);
         
         TimeSpan tollWindowDuration = TimeSpan.FromHours(1);
-        int maxDailyTollSek = 60;
+        decimal maxDailyTollSek = 60M;
         
         if (IsTollFreeVehicle(vehicle))
         {
-            return 0;
+            return 0M;
         }
         
         if (IsTollFreeDate(passageDate))
         {
-            return 0;
+            return 0M;
         }
         
         IEnumerable<TimeOnly> orderedPassageTimes = passageTimes
@@ -33,10 +33,10 @@ public class TollCalculator
 
         // Toll calculations apply a sliding window of time within which only the top toll value is considered.
         // E.g. if a car passes an 13 SEK gate and an 8 SEK gate within the sliding window, only the top value counts (13 SEK) 
-        int totalTollSek = 0;
+        decimal totalTollSek = 0M;
         TimeOnly? currentWindowStartTime = null;
         TimeOnly currentWindowEndTime = default;
-        int currentWindowTopTollSek = 0;
+        decimal currentWindowTopTollSek = 0M;
 
         foreach (TimeOnly passageTime in orderedPassageTimes)
         {
@@ -46,17 +46,17 @@ public class TollCalculator
                 totalTollSek += currentWindowTopTollSek;
                 currentWindowStartTime = passageTime;
                 currentWindowEndTime = currentWindowStartTime.Value.Add(tollWindowDuration);
-                currentWindowTopTollSek = 0;
+                currentWindowTopTollSek = 0M;
             }
 
-            int tollSek = CalculateTollForPassage(vehicle, passageDate, passageTime);
+            decimal tollSek = CalculateTollForPassage(vehicle, passageDate, passageTime);
             currentWindowTopTollSek = Math.Max(tollSek, currentWindowTopTollSek);
         }
 
         // Last window's toll is added here because that's not done in the loop.
         totalTollSek += currentWindowTopTollSek;
         
-        int clampedTotalTollSek = Math.Min(totalTollSek, maxDailyTollSek);
+        decimal clampedTotalTollSek = Math.Min(totalTollSek, maxDailyTollSek);
         
         return clampedTotalTollSek;
     }
@@ -78,19 +78,19 @@ public class TollCalculator
     /// <param name="vehicle">the vehicle</param>
     /// <param name="passageDateTime">date and time for the pass</param>
     /// <returns>the toll fee for that time, in SEK</returns>
-    public int CalculateTollForPassage(Vehicle vehicle, DateTime passageDateTime)
+    public decimal CalculateTollForPassage(Vehicle vehicle, DateTime passageDateTime)
     {
         ArgumentNullException.ThrowIfNull(vehicle);
         
         if (IsTollFreeVehicle(vehicle))
         {
-            return 0;
+            return 0M;
         }
         
         DateOnly passageDate = DateOnly.FromDateTime(passageDateTime);
         if (IsTollFreeDate(passageDate))
         {
-            return 0;
+            return 0M;
         }
         
         int hour = passageDateTime.Hour;
@@ -107,7 +107,7 @@ public class TollCalculator
         else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
         else return 0;
     }
-    private int CalculateTollForPassage(Vehicle vehicle, DateOnly passageDate, TimeOnly passageTime)
+    private decimal CalculateTollForPassage(Vehicle vehicle, DateOnly passageDate, TimeOnly passageTime)
     {
         int hour = passageTime.Hour;
         int minute = passageTime.Minute;
@@ -121,7 +121,7 @@ public class TollCalculator
         else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
         else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
         else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-        else return 0;
+        else return 0M;
     }
     private bool IsTollFreeDate(DateOnly date)
     {
