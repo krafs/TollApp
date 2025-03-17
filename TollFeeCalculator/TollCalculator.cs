@@ -1,18 +1,14 @@
-﻿using System;
-using System.Globalization;
-using TollFeeCalculator;
+﻿using TollFeeCalculator;
 
 public class TollCalculator
 {
-
-    /**
-     * Calculate the total toll fee for one day
-     *
-     * @param vehicle - the vehicle
-     * @param dates   - date and time of all passes on one day
-     * @return - the total toll fee for that day
-     */
-    
+    /// <summary>
+    /// Calculate the total toll fee for one day
+    /// </summary>
+    /// <param name="vehicle">the vehicle</param>
+    /// <param name="passageDate">date of all passes on one day</param>
+    /// <param name="passageTimes">times of all passes</param>
+    /// <returns>the total toll fee for that day, in SEK</returns>
     public int CalculateTotalDailyToll(Vehicle vehicle, DateOnly passageDate, IEnumerable<TimeOnly> passageTimes)
     {
         ArgumentNullException.ThrowIfNull(vehicle);
@@ -75,8 +71,14 @@ public class TollCalculator
                vehicleType.Equals(VehicleType.Foreign) ||
                vehicleType.Equals(VehicleType.Military);
     }
-
-    public int CalculateTollForPassage(Vehicle vehicle, DateTime date)
+    
+    /// <summary>
+    /// Calculate the toll fee for one single pass
+    /// </summary>
+    /// <param name="vehicle">the vehicle</param>
+    /// <param name="passageDateTime">date and time for the pass</param>
+    /// <returns>the toll fee for that time, in SEK</returns>
+    public int CalculateTollForPassage(Vehicle vehicle, DateTime passageDateTime)
     {
         ArgumentNullException.ThrowIfNull(vehicle);
         
