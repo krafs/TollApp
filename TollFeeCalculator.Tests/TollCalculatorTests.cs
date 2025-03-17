@@ -4,7 +4,19 @@ namespace TollFeeCalculator.Tests;
 
 public class TollCalculatorTests
 {
-    private readonly TollCalculator _calculator = new();
+    private readonly TollCalculator _calculator;
+
+    public TollCalculatorTests()
+    {
+        TollCalculatorConfig config = new()
+        {
+            RuleSets =
+            {
+                new Default2025RuleSet()
+            }
+        };
+        _calculator = new TollCalculator(config);
+    }
 
     [Theory]
     [InlineData("2025-03-17 06:15", 8)] // 06:00-06:29
@@ -46,7 +58,7 @@ public class TollCalculatorTests
         Assert.Equal(0M, fee);
     }
 
-    [Fact(Skip = "Fails")]
+    [Fact]
     public void CalculateTollForPassageReturnsZeroInJuly()
     {
         // Arrange
@@ -74,7 +86,7 @@ public class TollCalculatorTests
         Assert.Equal(0M, fee);
     }
 
-    [Fact(Skip = "Fails")]
+    [Fact]
     public void CalculateTollForPassageReturnsZeroOnPublicHoliday()
     {
         // Arrange
@@ -87,8 +99,8 @@ public class TollCalculatorTests
         // Assert
         Assert.Equal(0M, fee);
     }
-    
-    [Fact(Skip = "Fails")]
+
+    [Fact]
     public void CalculateTollForPassageReturnsZeroOnDayBeforePublicHoliday()
     {
         // Arrange

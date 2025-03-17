@@ -2,6 +2,13 @@
 
 public class TollCalculator
 {
+    private readonly TollCalculatorConfig _config;
+
+    public TollCalculator(TollCalculatorConfig config)
+    {
+        _config = config;
+    }
+
     /// <summary>
     /// Calculate the total toll fee for one day
     /// </summary>
@@ -13,20 +20,18 @@ public class TollCalculator
     {
         ArgumentNullException.ThrowIfNull(vehicle);
         ArgumentNullException.ThrowIfNull(passageTimes);
-        
-        TimeSpan tollWindowDuration = TimeSpan.FromHours(1);
-        decimal maxDailyTollSek = 60M;
-        
-        if (IsTollFreeVehicle(vehicle))
+        TollRuleSet ruleSet = _config.RuleSets.Last(x => x.ValidFrom <= passageDate);
+
+        if (IsTollFreeVehicle(vehicle, ruleSet))
         {
             return 0M;
         }
-        
-        if (IsTollFreeDate(passageDate))
+
+        if (IsTollFreeDate(passageDate, ruleSet))
         {
             return 0M;
         }
-        
+
         IEnumerable<TimeOnly> orderedPassageTimes = passageTimes
             .Distinct()
             .Order();
@@ -45,33 +50,27 @@ public class TollCalculator
                 // Start a new toll window
                 totalTollSek += currentWindowTopTollSek;
                 currentWindowStartTime = passageTime;
-                currentWindowEndTime = currentWindowStartTime.Value.Add(tollWindowDuration);
+                currentWindowEndTime = currentWindowStartTime.Value.Add(ruleSet.TollFreeWindowDuration);
                 currentWindowTopTollSek = 0M;
             }
 
-            decimal tollSek = CalculateTollForPassage(vehicle, passageDate, passageTime);
+            decimal tollSek = CalculateTollForPassage(vehicle, passageDate, passageTime, ruleSet);
             currentWindowTopTollSek = Math.Max(tollSek, currentWindowTopTollSek);
         }
 
         // Last window's toll is added here because that's not done in the loop.
         totalTollSek += currentWindowTopTollSek;
-        
-        decimal clampedTotalTollSek = Math.Min(totalTollSek, maxDailyTollSek);
-        
+
+        decimal clampedTotalTollSek = Math.Min(totalTollSek, ruleSet.MaxDailyTollSek);
+
         return clampedTotalTollSek;
     }
 
-    private bool IsTollFreeVehicle(Vehicle vehicle)
+    private bool IsTollFreeVehicle(Vehicle vehicle, TollRuleSet ruleSet)
     {
-        VehicleType vehicleType = vehicle.VehicleType;
-        return vehicleType.Equals(VehicleType.Motorbike) ||
-               vehicleType.Equals(VehicleType.Tractor) ||
-               vehicleType.Equals(VehicleType.Emergency) ||
-               vehicleType.Equals(VehicleType.Diplomat) ||
-               vehicleType.Equals(VehicleType.Foreign) ||
-               vehicleType.Equals(VehicleType.Military);
+        return ruleSet.TollFreeVehicleTypes.Contains(vehicle.VehicleType);
     }
-    
+
     /// <summary>
     /// Calculate the toll fee for one single pass
     /// </summary>
@@ -81,70 +80,56 @@ public class TollCalculator
     public decimal CalculateTollForPassage(Vehicle vehicle, DateTime passageDateTime)
     {
         ArgumentNullException.ThrowIfNull(vehicle);
-        
-        if (IsTollFreeVehicle(vehicle))
-        {
-            return 0M;
-        }
-        
+
         DateOnly passageDate = DateOnly.FromDateTime(passageDateTime);
-        if (IsTollFreeDate(passageDate))
+        TollRuleSet ruleSet = _config.RuleSets.Last(x => x.ValidFrom <= passageDate);
+        if (IsTollFreeVehicle(vehicle, ruleSet))
         {
             return 0M;
         }
-        
-        int hour = passageDateTime.Hour;
-        int minute = passageDateTime.Minute;
 
-        if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-        else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-        else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-        else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-        else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
-        else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-        else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-        else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-        else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-        else return 0;
-    }
-    private decimal CalculateTollForPassage(Vehicle vehicle, DateOnly passageDate, TimeOnly passageTime)
-    {
-        int hour = passageTime.Hour;
-        int minute = passageTime.Minute;
-
-        if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-        else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-        else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-        else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-        else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
-        else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-        else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-        else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-        else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-        else return 0M;
-    }
-    private bool IsTollFreeDate(DateOnly date)
-    {
-        int year = date.Year;
-        int month = date.Month;
-        int day = date.Day;
-
-        if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
-
-        if (year == 2013)
+        if (IsTollFreeDate(passageDate, ruleSet))
         {
-            if (month == 1 && day == 1 ||
-                month == 3 && (day == 28 || day == 29) ||
-                month == 4 && (day == 1 || day == 30) ||
-                month == 5 && (day == 1 || day == 8 || day == 9) ||
-                month == 6 && (day == 5 || day == 6 || day == 21) ||
-                month == 7 ||
-                month == 11 && day == 1 ||
-                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-            {
-                return true;
-            }
+            return 0M;
         }
+
+        TimeOnly passageTime = TimeOnly.FromDateTime(passageDateTime);
+        return CalculateTollForPassage(vehicle, passageDate, passageTime, ruleSet);
+    }
+
+    private decimal CalculateTollForPassage(Vehicle vehicle, DateOnly passageDate, TimeOnly passageTime, TollRuleSet ruleSet)
+    {
+        return ruleSet.TollRules
+            .First(x => passageTime.IsBetween(x.ValidFrom, x.ValidTo))
+            .TollSek;
+    }
+
+    private static bool IsTollFreeDate(DateOnly date, TollRuleSet ruleSet)
+    {
+        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            return true;
+        }
+
+        bool isJuly = date.Month == 7;
+        if (isJuly)
+        {
+            return true;
+        }
+
+        bool isDatePublicHoliday = ruleSet.PublicHolidays.Contains(date);
+        if (isDatePublicHoliday)
+        {
+            return true;
+        }
+
+        DateOnly dayAfterPassageDate = date.AddDays(1);
+        bool isDateDayBeforePublicHoliday = ruleSet.PublicHolidays.Contains(dayAfterPassageDate);
+        if (isDateDayBeforePublicHoliday)
+        {
+            return true;
+        }
+
         return false;
     }
 }
